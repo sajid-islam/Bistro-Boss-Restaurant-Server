@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const app = express()
 const cors = require('cors');
@@ -25,12 +25,30 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
+        const usersCollection = client.db("BistroDB").collection("users")
         const menuCollection = client.db("BistroDB").collection("menu")
         const reviewsCollection = client.db("BistroDB").collection("reviews")
+        const cartCollection = client.db("BistroDB").collection("cart")
+
+        //users collection
+        app.get('/users', async(req,res)=>{
+            const result = await usersCollection.find().toArray()
+            res.send(result)
+        })
+        app.post('/users',async(req,res)=>{
+            const user = req.body;
+            const query = {email:user.email}
+            const existUser = await usersCollection.findOne(query)
+            if(existUser){
+                return res.send({message:'user already exist',insertId:null})
+            }
+            const result = await usersCollection.insertOne(user)
+            res.send(result)
+        })
+
         // menu operation
         app.get('/menu', async(req,res)=>{
             let query = req.query.category
-            console.log(query);
             const cursor = menuCollection.find()
             const result = await cursor.toArray()
             res.send(result)
@@ -44,6 +62,27 @@ async function run() {
         app.get('/reviews', async(req,res)=>{
             const cursor = reviewsCollection.find()
             const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        //Cart collection
+        app.post('/cart' , async(req,res)=>{
+            const item = req.body;
+            const result = await cartCollection.insertOne(item)
+            res.send(result)
+        })
+        app.get('/cart',async(req,res)=>{
+            const email = req.query.email
+            const query ={
+                email:email
+            }
+            const result = await cartCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.delete('/cart/:id', async(req,res)=>{
+            const id = req.params
+            const query = {_id: new ObjectId(id)}
+            const result = await cartCollection.deleteOne(query)
             res.send(result)
         })
 
