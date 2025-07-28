@@ -13,7 +13,10 @@ app.use(cookieParser());
 app.use(
     cors({
         credentials: true,
-        origin: "http://localhost:5173",
+        origin: [
+            "http://localhost:5173",
+            "https://bistro-boss-three.vercel.app",
+        ],
     })
 );
 app.use(express.json());
@@ -43,6 +46,13 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     },
 });
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
+};
 
 async function run() {
     try {
@@ -60,11 +70,7 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: "1h",
             });
-            res.cookie("token", token, {
-                httpOnly: true,
-                secure: false,
-                sameSite: "Strict",
-            }).send(token);
+            res.cookie("token", token, cookieOptions).send(token);
         });
 
         app.delete("/jwt", async (req, res) => {
