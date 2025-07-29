@@ -201,6 +201,10 @@ app.get("/", (req, res) => {
     res.send("BISTRO BOSS SERVER IS RUNNING");
 });
 
-app.listen(port, () => {
-    console.log("BISTRO BOSS RUNNING ON PORT", port);
-});
+if (!process.env.NODE_ENV === "production") {
+    app.listen(port, () => {
+        console.log("BISTRO BOSS RUNNING ON PORT", port);
+    });
+}
+
+module.exports = app;
