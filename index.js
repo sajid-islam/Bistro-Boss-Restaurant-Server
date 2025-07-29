@@ -204,7 +204,7 @@ async function run() {
 
             const query = {
                 _id: {
-                    $in: payment.cartItems.menuIds.map(
+                    $in: payment.cartItems.cartIds.map(
                         (id) => new ObjectId(id)
                     ),
                 },
