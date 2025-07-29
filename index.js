@@ -36,18 +36,6 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-const verifyAdmin = async (req, res, next) => {
-    const email = req.decoded.email;
-    const query = { email: email };
-    const user = await usersCollection.findOne(query);
-    if (user?.role !== "admin") {
-        return res
-            .status(403)
-            .send({ error: true, message: "forbidden message" });
-    }
-    next();
-};
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xweyicz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -76,6 +64,18 @@ async function run() {
         const reviewsCollection = client.db("BistroDB").collection("reviews");
         const cartCollection = client.db("BistroDB").collection("cart");
         const paymentCollection = client.db("BistroDB").collection("payments");
+
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user?.role !== "admin") {
+                return res
+                    .status(403)
+                    .send({ error: true, message: "forbidden message" });
+            }
+            next();
+        };
 
         //jwt
         app.post("/jwt", async (req, res) => {
@@ -150,9 +150,40 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         });
+
+        app.get("/menu/:id", async (req, res) => {
+            const id = req.params.id;
+            const result = await menuCollection.findOne({
+                _id: new ObjectId(id),
+            });
+            res.send(result);
+        });
         app.get("/menuCount", async (req, res) => {
             const count = await menuCollection.estimatedDocumentCount();
             res.send({ count });
+        });
+
+        app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
+            const newItem = req.body;
+            const result = await menuCollection.insertOne(newItem);
+            res.send(result);
+        });
+
+        app.patch("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const updatedItem = req.body;
+            const id = req.params.id;
+            const result = await menuCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updatedItem }
+            );
+            res.send(result);
+        });
+
+        app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await menuCollection.deleteOne(query);
+            res.send(result);
         });
 
         //reviews operation
@@ -204,9 +235,7 @@ async function run() {
 
             const query = {
                 _id: {
-                    $in: payment.cartItems.cartIds.map(
-                        (id) => new ObjectId(id)
-                    ),
+                    $in: payment.cartIds.map((id) => new ObjectId(id)),
                 },
             };
             const deleteResult = await cartCollection.deleteMany(query);
