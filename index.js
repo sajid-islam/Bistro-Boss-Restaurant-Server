@@ -3,7 +3,6 @@ const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const serverless = require("serverless-http");
 const cors = require("cors");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
@@ -58,7 +57,7 @@ const cookieOptions = {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const usersCollection = client.db("BistroDB").collection("users");
         const menuCollection = client.db("BistroDB").collection("menu");
@@ -202,4 +201,6 @@ app.get("/", (req, res) => {
     res.send("BISTRO BOSS SERVER IS RUNNING");
 });
 
-module.exports.handler = serverless(app);
+app.listen(port, () => {
+    console.log("BISTRO BOSS RUNNING ON PORT", port);
+});
