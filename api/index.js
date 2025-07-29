@@ -202,10 +202,4 @@ app.get("/", (req, res) => {
     res.send("BISTRO BOSS SERVER IS RUNNING");
 });
 
-if (process.env.NODE_ENV !== "production") {
-    app.listen(port, () => {
-        console.log("BISTRO BOSS RUNNING ON PORT", port);
-    });
-}
-
 module.exports.handler = serverless(app);
