@@ -186,7 +186,7 @@ async function run() {
             });
         });
 
-        app.post("/payments", verifyJWT, async (req, res) => {
+        app.post("/payments", verifyToken, async (req, res) => {
             const payment = req.body;
             const insertResult = await paymentCollection.insertOne(payment);
 
