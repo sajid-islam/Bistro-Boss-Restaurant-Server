@@ -203,7 +203,11 @@ async function run() {
             const insertResult = await paymentCollection.insertOne(payment);
 
             const query = {
-                _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
+                _id: {
+                    $in: payment.cartItems.menuIds.map(
+                        (id) => new ObjectId(id)
+                    ),
+                },
             };
             const deleteResult = await cartCollection.deleteMany(query);
 
