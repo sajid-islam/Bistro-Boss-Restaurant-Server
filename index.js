@@ -36,6 +36,18 @@ const verifyToken = (req, res, next) => {
     });
 };
 
+const verifyAdmin = async (req, res, next) => {
+    const email = req.decoded.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    if (user?.role !== "admin") {
+        return res
+            .status(403)
+            .send({ error: true, message: "forbidden message" });
+    }
+    next();
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xweyicz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -198,7 +210,7 @@ async function run() {
             res.send({ insertResult, deleteResult });
         });
 
-        app.get("/admin-stats", verifyJWT, verifyAdmin, async (req, res) => {
+        app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
             const users = await usersCollection.estimatedDocumentCount();
             const products = await menuCollection.estimatedDocumentCount();
             const orders = await paymentCollection.estimatedDocumentCount();
