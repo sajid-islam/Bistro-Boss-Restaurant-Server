@@ -17,6 +17,7 @@
         "express": "^4.19.2",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.6.2",
+        "serverless-http": "^3.2.0",
         "stripe": "^18.3.0"
     }
 }

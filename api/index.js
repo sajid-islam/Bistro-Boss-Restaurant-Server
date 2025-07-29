@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const serverless = require("serverless-http");
 const cors = require("cors");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
@@ -207,6 +208,4 @@ if (process.env.NODE_ENV !== "production") {
     });
 }
 
-module.exports = (req, res) => {
-    return app(req, res);
-};
+module.exports.handler = serverless(app);
